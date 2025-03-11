@@ -1,0 +1,212 @@
+# Download package
+download:
+  arch: amd64
+  dest: /data/mirrors/k8s
+  timeout: 60
+  retries: 4
+  retry_stagger: 5
+
+# Repository
+repo:
+  nvidia_container_toolkit_centos: "https://nvidia.github.io/libnvidia-container/stable/rpm/$basearch"
+  nvidia_container_toolkit_ubuntu: "deb https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /"
+
+# Kubernetes Cert
+cert:
+  dir: /opt/certs
+  size: 2048
+  day: 3650d
+
+# https://github.com/etcd-io/etcd
+etcd:
+  download_url: https://github.com/etcd-io/etcd/releases/download
+  version: v3.5.18
+  data_dir: "/var/lib/etcd"
+
+# High Availability
+# kube-apiserver
+loadbalance:
+  ip: 10.43.75.200
+  port: 6443
+  # domain_name: apiserver.kubeop.com
+  # access_ip:
+  #   - 10.43.75.200
+
+# https://github.com/kubernetes/kubernetes/
+kubernetes:
+  download_url: https://dl.k8s.io/release
+  version: v1.32.2
+  # Configure IPv4 Stack networking
+  ipv4_stack: true
+  # Configure IPv6 Stack networking
+  ipv6_stack: false
+  pods_subnet: 172.16.0.0/12
+  pods_subnet_ipv6: fd85:ee78:d8a6:8607:1::/107
+  service_addresses: 192.168.0.0/16
+  service_addresses_ipv6: fd85:ee78:d8a6:8607:2::/112
+  node_prefix: 25
+  node_prefix_ipv6: 120
+  kubelet_max_pods: 110
+  kubelet_dir: "/var/lib/kubelet"
+  kube_proxy_mode: ipvs
+  scheduler: rr
+  strict_arp: false
+
+# https://github.com/helm/helm
+helm:
+  enabled: true
+  download_url: https://mirrors.huaweicloud.com/helm
+  version: v3.17.1
+
+# https://github.com/containernetworking/plugins
+cniplugins:
+  download_url: https://github.com/containernetworking/plugins/releases/download
+  version: v1.6.2
+
+# https://github.com/kubernetes-sigs/cri-tools
+critools:
+  download_url: https://github.com/kubernetes-sigs/cri-tools/releases/download
+  version: v1.32.0
+
+# https://github.com/opencontainers/runc
+runc:
+  download_url: https://github.com/opencontainers/runc/releases/download
+  # https://github.com/containerd/containerd/blob/v1.7.24/script/setup/runc-version
+  version: v1.2.4
+
+# https://github.com/containerd/containerd
+containerd:
+  download_url: https://github.com/containerd/containerd/releases/download
+  version: 1.7.25
+  cfg_dir: /etc/containerd
+  root: "/var/lib/containerd"
+  state: "/run/containerd"
+  # containerd oom_score
+  oom_score: -999
+  grpc:
+    max_recv_message_size: 16777216
+    max_send_message_size: 16777216
+  debug:
+    address: ""
+    level: "info"
+    format: ""
+    uid: 0
+    gid: 0
+  metrics:
+    address: ""
+    grpc_histogram: false
+  cri:
+    sandbox_image: 
+      repo: "registry.k8s.io/pause"
+      tag: "3.10"
+    max_container_log_line_size: 16384
+    enable_unprivileged_ports: false
+    enable_unprivileged_icmp: false
+    enable_selinux: false
+    disable_apparmor: false
+    tolerate_missing_hugetlb_controller: true
+    disable_hugetlb_controller: true
+    image_pull_progress_timeout: 5m
+    enable_cdi: false
+  containerd:
+    snapshotter: overlayfs
+    discard_unpacked_layers: true
+  options:
+    SystemdCgroup: true
+  nri:
+    enabled: false
+  registry_mirrors:
+    - prefix: docker.io
+      mirrors:
+        - host: https://registry-1.docker.io
+          capabilities: ["pull", "resolve"]
+          skip_verify: false
+  registry_auth: []
+    #- registry: 10.0.0.2:5000
+    #  username: user
+    #  password: pass
+
+    
+# Network Plugin
+network_plugin: calico
+# cilium need linux kernel >= 4.9.17
+cilium:
+  # https://github.com/cilium/cilium
+  version: v1.17.1
+  # {{cilium.registry}}/operator:{{cilium.version}}
+  # {{cilium.registry}}/cilium:{{cilium.version}}
+  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+  # "disabled" or "vxlan" or "geneve"
+  network_mode: vxlan
+  enable_portmap: false
+  mtu: ""
+  config_extra_vars: {}
+
+flannel:
+  # https://github.com/flannel-io/flannel
+  version: v0.26.4
+  plugin_version: v1.6.2-flannel1
+  # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
+  # {{flannel.registry}}/flannel:{{flannel.version}}
+  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+  # "vxlan" or "host-gw"
+  network_mode: vxlan
+  args:
+    - "--ip-masq"
+    - "--kube-subnet-mgr"
+  directRouting: false
+  # mtu: 1500
+
+calico:
+  download_url: https://github.com/projectcalico/calico/releases/download
+  # https://github.com/projectcalico/calico
+  version: v3.28.3
+  # {{calico.registry}}/kube-controllers:{{calico.version}}
+  # {{calico.registry}}/node:{{calico.version}}
+  # {{calico.registry}}/cni:{{calico.version}}
+  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+  # "ipip" or "bgp" or "mix"
+  network_mode: ipip
+  mtu: 0
+  ip_autodetection_method: interface=eth0
+  ipv6_autodetection_method: interface=eth0
+
+kuberouter:
+  # https://github.com/cloudnativelabs/kube-router
+  version: v2.4.1
+  # {{kube-router.registry}}/kube-router
+  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+  # Setups node CNI to allow hairpin mode, requires node reboots, see
+  # https://github.com/cloudnativelabs/kube-router/blob/master/docs/user-guide.md#hairpin-mode
+  hairpin_mode: true
+  run_router: true
+  run_firewall: true
+  run_service_proxy: false
+
+# Addons
+coredns:
+  version: 1.11.3
+  # {{coredns.registry}}/coredns:{{coredns.version}}
+  registry: registry.k8s.io/coredns/coredns
+nodelocaldns:
+  enabled: true
+  version: 1.23.1
+  # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
+  registry: registry.k8s.io/dns/k8s-dns-node-cache
+  ip: "169.254.20.10"
+  ip6: "fd00::"
+metrics_server:
+  enabled: true
+  version: v0.7.2
+  # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
+  registry: registry.k8s.io/metrics-server/metrics-server
+npd:
+  enabled: false
+  version: v0.8.20
+  # {{npd.registry}}/node-problem-detector:{{npd.version}}
+  registry: registry.k8s.io/node-problem-detector/node-problem-detector
+nvidia_device_plugin:
+  enabled: false
+  version: v0.17.0
+  # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
+  registry: nvcr.io/nvidia/k8s-device-plugin

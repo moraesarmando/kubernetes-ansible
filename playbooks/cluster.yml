@@ -1,0 +1,6 @@
+---
+- name: "Download Package"
+  hosts: localhost
+  run_once: true
+  roles:
+    - { role: download, tags: download, when: "not skip_downloads"}
